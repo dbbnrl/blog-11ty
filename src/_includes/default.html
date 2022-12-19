@@ -16,7 +16,7 @@
       <link rel="stylesheet" type="text/css" href="/static/css/prism-tomorrow.css">
     {% endif %}
   </head>
-  <body>
+  <body class="bg-gray-50">
     {% include "./partials/navbar.html" %}
 
     {{ content | safe }}
@@ -24,6 +24,11 @@
     {% include "./partials/footer.html" %}
 
     <script src="/static/js/alpine.js"></script>
+
+    <script type="module">
+      import mermaid from "https://unpkg.com/mermaid/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+    </script>
 
     {% if path == "home" %}
       <!-- Netlify Identity Widget -->

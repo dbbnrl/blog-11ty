@@ -14,7 +14,40 @@ h3 {
 
 /* Syntax Highlighting*/
 
+body pre[class="mermaid"] {
+  @apply bg-gray-50;
+}
+
 body :not(pre) > code[class*="language-"],
 body pre[class*="language-"] {
   @apply bg-gray-800;
+}
+
+/* Sidenotes */
+aside.sidenote {
+  font-size: 80%;
+  position: relative;
+}
+
+.sidenote-number {
+  @apply font-extrabold;
+}
+
+@media (max-width: 1279px) {
+aside.sidenote {
+  padding-left: 15%;
+} }
+
+@media (min-width: 1280px) {
+  aside.sidenote {
+    float: right;
+    clear: right;
+    margin-right: -16rem;
+    text-align: left;
+
+    top: -6rem;
+    width: 14rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
+  }
 }
