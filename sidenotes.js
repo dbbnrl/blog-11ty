@@ -1,3 +1,4 @@
+// Modified from https://github.com/hnrklssn/markdown-it-sidenote
 // Process sidenotes
 //
 'use strict';
@@ -123,6 +124,7 @@ module.exports = function sidenote_plugin(md) {
         content: state.src.slice(labelStart, labelEnd),
         tokens
       };
+      //console.log(state.env.sidenotes.list[sidenoteId]);
     }
 
     state.pos = labelEnd + 1;
@@ -132,6 +134,13 @@ module.exports = function sidenote_plugin(md) {
 
   function contains_sidenote(tok) {
     return tok.children && tok.children.some(child => child.type === 'sidenote_ref');
+  }
+
+  function num_sidenotes(tok) {
+    if (!tok.type === 'inline') return 0;
+    if (!tok.children) return 0;
+    const l = tok.children.filter(child => child.type === 'sidenote_ref');
+    return l.length;
   }
 
   function create_sidenote_list_element(state, sidenote, i) {
@@ -190,33 +199,36 @@ module.exports = function sidenote_plugin(md) {
 
     const sidenotes = state.env.sidenotes.list;
     const stack = [];
+    let index = 0;
     while (sidenotes.length) {
-      const sidenote = sidenotes.pop();
-      let tok = state.tokens.pop();
-      // search backwards for sidenote reference
-      while (tok.type !== 'inline' || !contains_sidenote(tok)) {
+      //const sidenote = sidenotes.pop();
+      let tok = state.tokens.shift();
+      let num = num_sidenotes(tok);
+      // search for sidenote reference
+      while (!num) {
         stack.push(tok);
-        tok = state.tokens.pop();
+        tok = state.tokens.shift();
+        num = num_sidenotes(tok);
       }
       if (!contains_sidenote(tok)) {
         throw new Error('missing sidenote ref');
       }
-      const stack2 = [ tok ];
-      tok = stack.pop();
-      // search forwards for end of paragraph containing sidenote ref
+      // search for end of paragraph containing sidenote ref
       while (tok.type !== 'paragraph_close') {
-        stack2.push(tok);
-        tok = stack.pop();
+        stack.push(tok);
+        tok = state.tokens.shift();
+        num += num_sidenotes(tok);
       }
-      stack2.push(tok); // push back paragraph close
-      const sidenote_tokens = create_sidenote_list_element(state, sidenote, sidenotes.length);
-      sidenote_tokens.reverse();
-      stack.push(...sidenote_tokens); // insert sidenote content after end of paragraph
-      stack2.reverse();
-      stack.push(...stack2); // save [sidenote_ref,paragraph_close] range to on stack so we can search for the next ref
+      stack.push(tok);
+      while (num && sidenotes.length) {
+        const sidenote = sidenotes.shift();
+        const sidenote_tokens = create_sidenote_list_element(state, sidenote, index);
+        stack.push(...sidenote_tokens); // insert sidenote content after end of paragraph
+        index++;
+        num--;
+      }
     }
-    stack.reverse();
-    state.tokens.push(...stack);
+    state.tokens.unshift(...stack);
     //return true
   }
 

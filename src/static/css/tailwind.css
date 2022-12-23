@@ -12,10 +12,14 @@ h3 {
   @apply text-2xl font-bold mb-3;
 }
 
+figcaption {
+  text-align: center;
+}
+
 /* Syntax Highlighting*/
 
 body pre[class="mermaid"] {
-  @apply bg-gray-50;
+  @apply bg-gray-50 flex justify-center;
 }
 
 body :not(pre) > code[class*="language-"],
@@ -23,7 +27,9 @@ body pre[class*="language-"] {
   @apply bg-gray-800;
 }
 
-/* Sidenotes */
+/* Sidenotes (see https://scripter.co/sidenotes-using-only-css/,
+   also google "Tufte CSS") */
+
 aside.sidenote {
   font-size: 80%;
   position: relative;
@@ -45,9 +51,11 @@ aside.sidenote {
     margin-right: -16rem;
     text-align: left;
 
-    top: -6rem;
+    top: -5rem;
     width: 14rem;
-    margin-top: 1rem;
     margin-bottom: 0;
+  }
+  aside.sidenote p {
+    margin: 0.5rem;
   }
 }
