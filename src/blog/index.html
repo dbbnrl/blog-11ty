@@ -11,6 +11,9 @@ layout: blog
                 <a href="{{ post.url | url }}">
                     {% if post.data.title %}
                         {{ post.data.title }}
+                        {% if post.data.subtitle %}
+                            - {{ post.data.subtitle}}
+                        {% endif %}
                     {% else %}
                         Untitled
                     {% endif %}

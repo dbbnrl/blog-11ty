@@ -8,8 +8,10 @@ const htmlmin = require("html-minifier");
 const markdownIt = require("markdown-it");
 const markdownItPandoc = require("markdown-it-pandoc");
 const markdownItAnchor = require("markdown-it-anchor");
-const markdownItTOC = require("markdown-it-toc-done-right");
+const markdownItHeaderSections = require("markdown-it-header-sections");
+//const markdownItTOC = require("markdown-it-toc-done-right");
 const markdownItSidenote = require("./sidenotes.js");
+const pluginTOC = require("eleventy-plugin-toc");
 
 module.exports = function (eleventyConfig) {
   // Disable automatic use of your .gitignore
@@ -27,10 +29,12 @@ module.exports = function (eleventyConfig) {
 
   // Markdown-it plugins
   let md = markdownIt({html: true, typographer: true})
+    .use(markdownItHeaderSections)
     .use(markdownItPandoc, { footnotes: false })
     .use(markdownItSidenote)
     .use(markdownItAnchor)
-    .use(markdownItTOC);
+    ;
+    //.use(markdownItTOC);
   eleventyConfig.setLibrary("md", md);
 
   // Syntax Highlighting for Code blocks
@@ -38,6 +42,12 @@ module.exports = function (eleventyConfig) {
 
   // Navigation
   eleventyConfig.addPlugin(pluginNavigation);
+
+  // TOC
+  eleventyConfig.addPlugin(pluginTOC, {
+    wrapper: '',
+    ul: true
+  });
 
   /*
   // Mermaid diagrams
@@ -89,6 +99,24 @@ module.exports = function (eleventyConfig) {
     return content;
   });
   */
+
+  eleventyConfig.addCollection('series', (collection) => {
+    let seriesCollection = {}
+
+    for (const post of collection.getAllSorted()) {
+      const series = post.data.series
+
+      if (series) {
+        if (seriesCollection[series]) {
+          seriesCollection[series].push(post)
+        } else {
+          seriesCollection[series] = [post]
+        }
+      }
+    }
+
+    return seriesCollection;
+  });
 
   // Let Eleventy transform HTML files as nunjucks
   // So that we can use .html instead of .njk

@@ -1,4 +1,20 @@
 <footer class="{{ 'fixed' if path == 'home' }} bottom-0 text-center w-full py-4">
+    {% if series %}
+    <nav class="flex items-center justify-between flex-wrap p-6 container mx-auto text-xl">
+    {% set previousPost = collections.series[series] | getPreviousCollectionItem(page) %}
+    {% set nextPost = collections.series[series] | getNextCollectionItem(page) %}
+    <div>
+    {% if previousPost %}
+        <a href="{{ previousPost.url }}">Prev: {{ previousPost.data.subtitle }}</a>
+    {% endif %}
+    </div>
+    <div>
+    {% if nextPost %}
+        <a href="{{ nextPost.url }}">Next: {{ nextPost.data.subtitle }}</a>
+    {% endif %}
+    </div>
+    </nav>
+    {% endif %}
     <small class="text-gray-500">Copyright ©
         {{settings.author}}
         2023.

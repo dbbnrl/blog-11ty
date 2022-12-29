@@ -4,6 +4,10 @@
 
 /*Your Custom CSS Goes here*/
 
+html {
+  scroll-behavior: smooth;
+}
+
 h1 {
   @apply text-4xl tracking-tighter mb-3 text-center lg:text-7xl;
 }
@@ -14,6 +18,68 @@ h3 {
 
 figcaption {
   text-align: center;
+}
+
+details summary { 
+  cursor: pointer;
+}
+
+details summary > * {
+  display: inline;
+}
+
+@media (min-width: 1280px) {
+  #toc-details summary {
+    display: none;
+  }
+  .table-of-contents {
+    position: fixed;
+    float: left;
+    clear: left;
+    margin-left: -16.75rem;
+    padding-right: 0;
+    border-right: 1px solid #efefef;
+    top: 4rem;
+    width: 16rem;
+  }
+  .table-of-contents ul,
+  .table-of-contents ol {
+    /* list-style: none; */
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    /* margin: 0; */
+    /* padding: 0; */
+  }
+  .table-of-contents ul li {
+    margin-left: -25px;
+  }
+  .table-of-contents li {
+    /* margin-top: 0; */
+    /* margin-bottom: 0; */
+    /* margin: 0; */
+    /* padding: 0; */
+  }
+
+  .table-of-contents a {
+    text-decoration: none;
+    /* display: block; */
+    padding: .125rem 0;
+    color: #ccc;
+    transition: all 50ms ease-in-out;
+  }
+
+  .table-of-contents a:hover,
+  .table-of-contents a:focus {
+    color: #666;
+  }
+
+  .table-of-contents li.active > a {
+    color: #333;
+    font-weight: 500;
+  }
+
 }
 
 /* Syntax Highlighting*/
@@ -48,12 +114,14 @@ aside.sidenote {
   aside.sidenote {
     float: right;
     clear: right;
-    margin-right: -16rem;
+    margin-right: -16.25rem;
     text-align: left;
 
     top: -5rem;
-    width: 14rem;
+    width: 15.25rem;
     margin-bottom: 0;
+    padding-left: 0;
+    border-left: 1px solid #efefef;
   }
   aside.sidenote p {
     margin: 0.5rem;

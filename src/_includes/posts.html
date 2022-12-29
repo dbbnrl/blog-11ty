@@ -6,16 +6,83 @@ prism: true
 <div class="container max-w-4xl mt-6  px-6">
     <div class="pb-5 mb-5 border-b border-gray-100">
         <h1 class="font-bold text-5xl">{{title}}</h1>
+        {% if subtitle %}
+            <h1 class="font-bole text-3xl">{{subtitle}}</h1>
+        {% endif %}
         <p class="text-center text-base leading-6 font-medium text-gray-500">
-            <time> {{ date | readableDate }}
-                by
-                <a>{{ author }}</a>
-
+            <time>
+              {{ date | readableDate }}
+              {% if update_date %}
+                (Updated {{ update_date | readableDate }})
+              {% endif %}
             </time>
         </p>
 
     </div>
     <article class="prose lg:prose-xl break-words my-4 mx-auto">
+        <details id="toc-details" open>
+        <summary><h2>Table of Contents</h2></summary>
+        <nav class="table-of-contents">
+            {% if series %}
+              {% set postslist = collections.series[series] %}
+              <ol>
+              {% for post in postslist %}
+                  <li{% if page.url == post.url %} class="active"{% endif %}>
+                      <a href={{ post.url }}>{{ post.data.subtitle }}</a>
+                      {% if page.url == post.url %}
+                          {{ content | toc | safe }}
+                      {% endif %}
+                  </li>
+              {% endfor %}
+              </ol>
+            {% else %}
+              {{ content | toc | safe }}
+            {% endif %}
+        </nav>
+        </details>
         {{ content | safe }}</article>
 
 </div>
+
+<script type="module">
+    /*
+window.addEventListener('DOMContentLoaded', () => {
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = entry.target.getAttribute('id');
+        if (entry.intersectionRatio > 0) {
+          document.querySelector(`nav li a[href="#${id}"]`).parentElement.classList.add('active');
+        } else {
+          document.querySelector(`nav li a[href="#${id}"]`).parentElement.classList.remove('active');
+        }
+      });
+    });
+  
+    // Track all sections that have an `id` applied
+    document.querySelectorAll('section[id]').forEach((section) => {
+      observer.observe(section);
+    });
+    
+});
+*/
+window.addEventListener('DOMContentLoaded', () => {
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = entry.target.firstElementChild.getAttribute('id');
+        if (entry.isIntersecting) {
+          document.querySelector(`nav li a[href="#${id}"]`).parentElement.classList.add('active');
+        } else {
+          document.querySelector(`nav li a[href="#${id}"]`).parentElement.classList.remove('active');
+        }
+      });
+    });
+  
+    // Track all sections that have an `id` applied
+    document.querySelectorAll('section > :is(h1,h2,h3,h4,h5)[id]').forEach((heading) => {
+      observer.observe(heading.parentElement);
+    });
+    
+});
+</script>
