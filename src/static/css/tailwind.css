@@ -127,3 +127,7 @@ aside.sidenote {
     margin: 0.5rem;
   }
 }
+
+.force-tailwind-to-generate {
+  @apply my-0;
+}

@@ -105,7 +105,16 @@ educational little project.  As a bonus, it actually works!
 
 ## The plan
 
-At this point in time (2016) I had done some small experiments with Raspberry Pi and its
+At this point in time (2016) I had done some small experiments with Raspberry Pi
+^[The
+[Raspberry Pi](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/)
+is a small, cheap computer marketed at hobbyists.
+![](/static/img/rpi_product.jpg){.!my-0}
+I picked it for this project
+because it has a very capable camera interface and a large number of General Purpose Input / Output (GPIO) pins, which allow the Pi to control and sense external
+circuits. Later posts will discuss the Pi in detail.
+]
+and its
 camera module, so that seemed like a logical starting point.  The existing
 catdoor gave me physical sensors and a locking mechanism, already well-engineered.
 I had zero experience with machine learning and no idea if the Pi would be powerful
@@ -177,12 +186,14 @@ least once per second --- ideally more like 5 times per second.  If image proces
 takes too long, the cat may reach the door with contraband before analysis is
 complete, and the "unlock immediately" policy would always allow her in.
 ^[Also, the lockout time must be at least as long as the response
-time.]
+time, so shorter reponse times give more flexibility in lockout time.]
 * **Local processing only:**  I wasn't 100% certain I could acheive this, but my goal
 was to keep all decision-making on the Pi.  If I discovered that it wasn't powerful
 enough, my fallback plan was to outsource image recognition to a larger computer in
 my home.  Under no circumstances would I rely on the cloud.
-^[Footnote about why]
+^[My motivation here was safety --- I don't want the system to be dependent on
+internet service that might be interrupted, or other people's computers that might
+be slow to respond.]
 * **Ignore ambiguous/unexpected results:**  Only an unambiguously "bad" image
 (Isabelle with a victim) should trigger
 lockout.  *Anything* else --- my cat without a critter, my cat without a clear view

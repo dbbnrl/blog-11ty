@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+  {% if series %}
+    {% set prevPost = collections.series[series] | getPreviousCollectionItem(page) %}
+    {% set nextPost = collections.series[series] | getNextCollectionItem(page) %}
+  {% endif %}
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge"/>
