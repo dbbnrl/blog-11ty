@@ -106,7 +106,7 @@ few degrees inward or outward even when it is locked.
 unless something pushes on it.
 4. This magnet activates...
 5. ...these two carefully placed
-[magnetic reed switches](/https://en.wikipedia.org/wiki/Reed_switch),
+[magnetic reed switches](https://en.wikipedia.org/wiki/Reed_switch),
 which together allow the controller to detect whether the flap is centered,
 pushed slightly inward, or pushed slightly outward.
 
@@ -135,7 +135,7 @@ The state of the switches can be determined by watching the voltage on the
 [pull-up resistors](https://en.wikipedia.org/wiki/Pull-up_resistor)
 in the control board.  However, when the reed switches are *active* (closed),
 one or both of the sense wires is shorted to Ground (0V) through the switches.
-In electrical terminology these are **Active LOW** sensors, because the low (0V)
+In electrical terminology these are *Active LOW* sensors, because the low (0V)
 voltage corresponse to the "activated" state, while the high (5V) voltage is the
 inactive, default state.
 
@@ -148,7 +148,7 @@ flap.  She can't actually get in unless we run the motor to open the latch.
 flap.  It's fine if she wants to smuggle things *out* of the
 house, so we should unlock the door unconditionally.
 
-Using the *active LOW* convention, we can say that **Orange** means "**Centered**",
+Using the active LOW convention, we can say that **Orange** means "**Centered**",
 and **Yellow** means "**Pushed IN**".
 
 We're not done yet!  Embedded in the left-hand hinge assembly is another magnet
@@ -184,7 +184,7 @@ We know these sensors read 0 or 5 Volts, with the 5V level driven by pull-up
 resistors on the control board.  Although the Pi uses 3.3V rather than 5V I/O,
 it does come with built-in pull-up resistors that can connect an input to the
 internal 3.3V supply.  So if we wire the ground and sense wires
-to the Pi and activate pull-ups on each of the sense wires, these same sensors
+to the Pi and enable pull-up resistors on each of the sense wires, these same sensors
 will read 0 or 3.3 Volts.  Perfect!
 
 So far, so good --- next let's examine how the door actually locks and unlocks.
