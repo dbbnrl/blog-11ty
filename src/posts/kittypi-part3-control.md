@@ -37,4 +37,4 @@ My cat likes to bring live rodents and birds into the house via her cat door.  I
   SEN --> DC --> MD --> MOT
   linkStyle 0 stroke:red,stroke-width:3px,color:red;
 ```
-<object data="/static/img/diagram-original.svg" width="100%" alt="Diagram" style="pointer-events: none;"></object>
+<object data="/static/img/diagram-full.svg" width="100%" alt="Diagram" style="pointer-events: none;"></object>

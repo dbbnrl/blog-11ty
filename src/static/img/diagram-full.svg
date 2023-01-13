@@ -17,10 +17,10 @@
         <rect x="780" y="410" width="120" height="140" rx="31.2" ry="31.2" fill="none" stroke="#000000" stroke-width="2" stroke-dasharray="6 6" pointer-events="none"/>
         <g fill="#000" font-family="Arial,Helvetica" text-anchor="middle" font-size="12px">
             <text x="840" y="392">
-                Reed
+                Reed Switches (Normally Open)
             </text>
             <text x="840" y="406">
-                Switches (NC)
+                Labels show Active(LOW) meaning
             </text>
         </g>
         <rect x="844" y="454" width="2" height="2" fill="#000000" stroke="none" transform="rotate(90,815,450)" pointer-events="none"/>
@@ -802,10 +802,10 @@
         <path d="M 1140 892 L 1133 895 L 1140 898" fill="none" stroke="#000000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" transform="rotate(90,1140,880)" pointer-events="none"/>
         <path d="M 1140 851 L 1140 861" fill="#000000" stroke="#000000" stroke-width="2" stroke-linecap="square" stroke-miterlimit="10" transform="rotate(90,1140,880)" pointer-events="none"/>
         <path d="M 1140 899 L 1140 909" fill="#000000" stroke="#000000" stroke-width="2" stroke-linecap="square" stroke-miterlimit="10" transform="rotate(90,1140,880)" pointer-events="none"/>
-        <rect x="1100" y="860" width="17" height="13" fill-opacity="0" fill="#dae2f2" stroke="none" pointer-events="none"/>
+        <rect x="1105.69" y="851.85" width="30" height="20" fill-opacity="0" fill="#dae2f2" stroke="none" pointer-events="none"/>
         <g fill="#000000" font-family="Arial,Helvetica" font-weight="bold" text-anchor="middle" font-size="12px">
-            <text x="1108.5" y="871.5">
-                R1
+            <text x="1120.69" y="866.85">
+                100Ω
             </text>
         </g>
         <path d="M 1110 880 L 1060 880 L 1060 760 L 890 760" fill="none" stroke="#00ff00" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
@@ -965,7 +965,7 @@
                 &lt;&lt;&lt; UNLOCKED
             </text>
             <text x="840" y="885">
-                = HIGH
+                = LOW
             </text>
         </g>
     </g>

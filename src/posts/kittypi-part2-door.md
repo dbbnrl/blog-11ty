@@ -61,7 +61,7 @@ an algorithm to reliably recognize problem images.
 * I might break something.
 
 Due to all this uncertainty, I proceeded very slowly and cautiously.  I tried to
-ensure sure I could always put the door back in operation if I had to abort or
+ensure I could always put the door back in operation if I had to abort or
 rethink the project.
 
 With the benefit of hindsight, however, let's pretend I knew exactly what I was
@@ -77,8 +77,11 @@ The Position Sensors and the Latch Assembly are where most of the action is, and
 we'll zoom in on each of them in a minute.  First, we can observe a few things
 about the rest of the components:
 
-* 4 AA batteries yields 6V, which is very close enough to the Raspberry Pi's 5V
-supply and input/output voltage.  That's promising.
+* 4 AA batteries yields 6 Volts, which appears to be regulated to 5V
+^[Based on measurements of some of the output wires.]
+on the control
+board.  The Raspberry Pi uses 3.3V for its Input / Output (I/O)
+pins, so we'll have to keep that difference in mind.
 * The left hinge has wires running into it --- we'll explore this later.
 * There are 12 wires coming out of the Control Board:  A common ground connected to
 the negative battery terminal (and several other places), a wire to
@@ -107,127 +110,149 @@ unless something pushes on it.
 which together allow the controller to detect whether the flap is centered,
 pushed slightly inward, or pushed slightly outward.
 
-With a bit of careful attention and probing with a voltmeter, we can figure out how
-to interpret the reed switches.  Each switch is normally closed by spring tension,
-meaning that it will
-conduct electricity when the magnet is **not** close by.  In this situation the black
-ground wire is shorted to the colored sense wire, forcing it to 0V.  When the magnet
-**is** close enough,
-^[In a quiet room, you can actually hear the faint click as the switch opens or
-closes when the magnet moves into or out of range.]
-it pulls the ground and sense wires apart, allowing the
-[pull-up resistor](https://en.wikipedia.org/wiki/Pull-up_resistor) in the control
-board to bring the sense wire up to 5V.
-
-Bottom line:  Magnet close = 5 Volts.  No magnet = 0 Volts.
-
-![This is acually a normally-open reed switch, but you get the idea.](/static/img/reedswitch_drawing.png){.mx-auto width=500}
+![These are Normally Open reed switches, which only conduct electricity when
+a magnetic field pulls the contacts together.](/static/img/reedswitch_drawing.png){.mx-auto width=500}
 
 ![Reed switches, view from above](/static/img/reed_detail.jpg){.mx-auto width=500}
 
 In this view of the reed switches, we can see that they are mounted in parallel,
-diagonal grooves, slightly offset from one another.  The one on the left (**Orange**
-wire) activates ^[i.e. opens, i.e. reads 5V] when the flap is perfectly centered.
-The one on the right (**Yellow** wire) activates when the door is pushed slightly **in**.
-When the door is pushed slightly **out**, neither switch activates.
+diagonal grooves, slightly offset from one another.  When the flap is perfectly
+centered, both switches are *active* (closed).
+^[Because the magnet is close enough to both of them.]
+When the flap is pushed slightly **IN**, the left switch
+*deactivates* (opens), leaving only the right switch active.  When the
+flap is pushed slightly **OUT**, the reverse situation occurs.
+^[In a quiet room, you can actually hear the faint clicks of the switches opening and
+closing as the magnet moves into or out of range.]
 
-It's astonishing to me that these inexpensive components can be placed and
-calibrated so
-precisely that just a few degrees of movement can be *reliably* detected.
+<figure>
+<video playsinline autoplay controls muted loop><source src="/static/img/reed_switch.webm"></video>
+<figcaption>Interaction of magnet and reed switches.</figcaption>
+</figure>
 
-Embedded in the left-hand hinge assembly is another magnet paired with another reed
-switch:
+The state of the switches can be determined by watching the voltage on the
+**Orange** and **Yellow** sense wires.  These wires are normally high (5V) due to 
+[pull-up resistors](https://en.wikipedia.org/wiki/Pull-up_resistor)
+in the control board.  However, when the reed switches are *active* (closed),
+one or both of the sense wires is shorted to Ground (0V) through the switches.
+In electrical terminology these are **Active LOW** sensors, because the low (0V)
+voltage corresponse to the "activated" state, while the high (5V) voltage is the
+inactive, default state.
 
-![Mystery switch](/static/img/mystery_detail.jpg){.mx-auto width=400}
+The possible states of the **Orange** and **Yellow** wires are:
+* **Orange LOW**: Flap is centered, nothing happening. (**Yellow** will always be
+**LOW** in this situation, but we don't care either way.)
+* **Orange HIGH, Yellow LOW**: Kitty (or something) is pushing **inward** on the
+flap.  She can't actually get in unless we run the motor to open the latch.
+* **Orange HIGH, Yellow HIGH**: Kitty is pushing **outward** on the
+flap.  It's fine if she wants to smuggle things *out* of the
+house, so we should unlock the door unconditionally.
+
+Using the *active LOW* convention, we can say that **Orange** means "**Centered**",
+and **Yellow** means "**Pushed IN**".
+
+We're not done yet!  Embedded in the left-hand hinge assembly is another magnet
+paired with another reed switch.
+This switch is designed to detect when the door is *wide* open (i.e., the cat is
+actually pushing her body through the opening).  Obviously this can only happen if
+the door is unlocked.
+
+![Left hinge. The reed switch runs through the center of the bracket.](/static/img/mystery_detail.jpg){.mx-auto width=400}
 
 The reed switch is mounted inside the support bracket (shown temporarily
 unmounted from the base), while the magnet is embedded into the pivot pin of
 the flap itself.
+As the flap rotates, the magnetic field generated by the hinge
+magnet rotates with respect to the fixed reed switch:
+* When the flap is *closed*, the field is at right angles to the switch, and does not
+affect it.  Thus the switch remains *inactive* (open), and the **Blue** sense wire
+is pulled up to 5V on the control board.
+* As the flap approaches 90 degrees open (in either direction),
+the field aligns with the reed switch
+and the contacts close, shorting the sense wire to GND (0V).
 
-I have no idea what this sensor is for.  I spent a little time on it, probing
-with my voltmeter while moving the flap into various positions, but I never saw
-it change voltage.  I probably could have figured it out with more effort, but
-I decided that I don't really *care*.  The two switches discussed earlier tell us
-everything we need to know:
-
-* **Orange HIGH, Yellow LOW**: Flap is centered, nothing happening.
-* **Orange LOW, Yellow HIGH**: Kitty (or something) is pushing *inward* on the
-flap.  She can't actually get in unless we run the motor to open the latch.
-* **Orange LOW, Yellow LOW**: Kitty is pushing *outward* on the
-flap.  It's fine if she wants to smuggle things *out* of the
-house, so we should unlock the door unconditionally.
-* **Orange HIGH, Yellow HIGH**: Not used.
-^[This state does occur briefly when the door is pushed
-*ever so slightly* inward.  But we can ignore it in practice --- just
-ignore the Yellow wire when the Orange wire is HIGH.]
+So the **Blue** sense wire means "**Wide Open**" (remember it's active LOW).
 
 ![Isabelle doesn't find this stuff interesting.](/static/img/isa_box2.jpg){.mx-auto width=500}
 
 Since our goal is to control the door from the Raspberry Pi, let's review where
 we stand:  We've figured out how to sense the position of the flap, including
-whether it's being pushed and in what direction.  We know these sensors read 0 or 5
-Volts,
-^[With the help of a pull-up resistor on the control board, which is also a built-in
-feature of the Pi.  More on this in a later post.]
-which is compabitible with the Pi's input pins. So far, so good --- next let's
-examine how the door actually locks and unlocks.
+whether it's being pushed, in what direction, and whether it's been opened wide
+enough for the cat to pass through.
+
+We know these sensors read 0 or 5 Volts, with the 5V level driven by pull-up
+resistors on the control board.  Although the Pi uses 3.3V rather than 5V I/O,
+it does come with built-in pull-up resistors that can connect an input to the
+internal 3.3V supply.  So if we wire the ground and sense wires
+to the Pi and activate pull-ups on each of the sense wires, these same sensors
+will read 0 or 3.3 Volts.  Perfect!
+
+So far, so good --- next let's examine how the door actually locks and unlocks.
 
 ## Latch Assembly
 
 The Latch Assembly has two jobs:
 
-* **Move** the Latch Pins into the locked (up) or unlocked (down) positions.
-* **Sense** when the Latch Pins are in the locked or unlocked positions.
+* **Move** the *Latch Pins* into the locked (up) or unlocked (down) positions.
+* **Sense** when the *Latch Pins* are in the locked or unlocked positions.
 
-To accomplish this, a single motor drives two gears.  Each gear turns at the
-exact same rate.  One of the gears connects to the Latch Pins and moves them
-up and down.  The other connects to an alignment sensor which tracks the position
-of both gears and the Latch Pins.
-
-![](/static/img/motor_annotated.jpg)
-
-![Alignment and Latch Pin plates removed for a better view of the gears](/static/img/worm_annotated.jpg)
+<figure>
+<video playsinline autoplay controls muted loop><source src="/static/img/latch_video.webm"></video>
+<figcaption>Unmute for a very annoying noise.</figcaption>
+</figure>
 
 On the left, a small electric motor
-^[Probing with a voltmeter shows that when active, this motor is
-connected directly to the battery voltage (5V-6V).  This should make Raspberry Pi
-control fairly simple.]
-drives a long shaft with two worm gears.  The
-[worm gears](https://en.wikipedia.org/wiki/Worm_drive)
-transform the high-speed rotation of the motor into lower-speed (but more powerful)
-motion of the two toothed gears.  Because those
-gears have the same number of teeth, their rotations are exactly synchronized.
+^[Probing with a voltmeter shows that when running, this motor is driven at around
+3.2 Volts.]
+turns a long shaft.  This causes the *Latch Pin Plate* (far right) to move up and
+down, locking or unlocking the door.
+At the same time it rotates the *Alignment Plate*
+(center), which provides feedback so we can stop the motor at
+just the right time.
 
-To the far right, the Latch Gear incorporates a 
-[cam](https://en.wikipedia.org/wiki/Cam)
-(small off-centered plastic nub that's hard to see in these photos), which turns
-the rotational movement of the gear into up/down movement of the Latch Pin Plate,
-causing the door to lock and unlock.
+Let's look at the latch and alignment mechanisms in more detail:
 
-The center section is responsible for sensing the position of the Latch Pins.
-The Alignment Gear turns the Alignment Plate, a half-circle of plastic that rotates through the center of
-the Photo Interrupter.  For half of its rotation it blocks the gap in the
-interrupter, and for the other half it leaves it unblocked.
-The Photo Interrupter itself is an optical device that senses when something
+![](/static/img/motor_annotated.jpg)
+![](/static/img/worm_annotated.jpg)
+
+The operation of the latch is fairly simple.  The
+[worm gear](https://en.wikipedia.org/wiki/Worm_drive)
+on the drive shaft transforms the high-speed rotation of the motor into lower-speed
+(but more powerful) motion of the *Latch Gear*.  The Latch Gear has an attached
+[cam](https://en.wikipedia.org/wiki/Cam),
+which turns the rotational movement of the gear into up/down movement of the Latch
+Pin Plate.
+
+The center section is a bit more complex.  Another worm gear turns the
+*Alignment Gear*
+^[Because the Latch Gear and Alignment Gear
+have the same number of teeth, their rotations are exactly synchronized.]
+which turns the Alignment Plate, 
+a half-circle of plastic that rotates through the center of
+the *Photo Interrupter*.  For half of its rotation it blocks the gap in the
+Interrupter, and for the other half it leaves it unblocked.
+The
+[Photo Interrupter](https://www.rohm.com/electronics-basics/photointerrupters/what-is-a-photointerrupter)
+is an optical device that senses when something
 is blocking the gap.
 
-If we watch the Alignment Plate and Latch Pin Plate moving as the controller locks
-and unlocks the door, we can make some observations:
+If we watch the Alignment Plate and Latch Pin Plate moving as the controller
+locks and unlocks the door, we can make some observations:
 
 * The motor always turns in the same direction.  It doesn't rotate one way to lock
 and the other way to unlock.
-* This results in a continuous up, down, up, down motion of the Latch Pin Plate, and
-continuous rotation of the Alignment Plate.
-* The Latch Pins reach the fully-up (locked) position *just* as the Alignment Plate
-*exits* the gap in the Photo Interrupter.  In other words, the door is locked just when the interrupter
-goes from **blocked** to **unblocked**.
-* The Latch Pins reach the fully-down (unlocked) position *just* as the Alignment
-Plate *enters* the gap in the interrupter, so the door is fully
-unlocked just when the interrupter goes from
-**unblocked** to **blocked**.
+* This results in a continuous up, down, up, down motion of the Latch Pin Plate,
+and continuous rotation of the Alignment Plate.
+* The Latch Pins reach the fully-up (**locked**) position *just* as the Alignment Plate
+**enters** the gap in the Photo Interrupter.  In other words, the door is locked just when the Interrupter
+goes from unblocked to **blocked**.
+* The Latch Pins reach the fully-down (**unlocked**) position *just* as the Alignment
+Plate **exits** the gap in the Interrupter, so the door is fully
+unlocked just when the Interrupter goes from
+blocked to **unblocked**.
 
 The Photo Interrupter is the most complex individual part here, with four wires
-leading to it.  It was pretty obvious that it was designed to sense the presence
+leading to it.  It was pretty obvious that its purpose is to sense the presence
 of the Alignment Plate, but it took a bit of research to find out exactly how it
 works (and what to call it).  Luckily I noticed these markings:
 
@@ -244,7 +269,7 @@ a.k.a. "Optical Interrupter").
 This diagram from the datasheet shows how it works.  On the left we have an
 infrared
 [Light Emitting Diode](https://en.wikipedia.org/wiki/Light-emitting_diode)
-, which shines IR light across the gap when voltage is applied across pins
+(LED), which shines IR light across the gap when voltage is applied across pins
 1 and 2.  On the right is a
 [Phototransistor](https://en.wikipedia.org/wiki/Photodiode#Related_devices)
 , which allows electricity to flow *only* when light hits it.  When the light is
@@ -265,20 +290,22 @@ and when the gap is unblocked, pin 4 reads LOW (0V).
 
 ![Light Emitting Eyes?](/static/img/isa_box3.jpg){.mx-auto width=500}
 
-The relationship between HIGH, LOW, blocked, unblocked, locked and unlocked gets
-a bit confusing.  Let's try to put all the pieces together:
+The relationship between HIGH, LOW, active, inactive, blocked, unblocked, locked
+and unlocked gets a bit confusing.  Let's try to put all the pieces together:
 
-* Just as the Latch Pins reach the **locked** position, the Alignment Plate *exits*
-the gap of the Photo Interrupter.  This means the Interrupter is now *unblocked*,
-so light from the LED can hit the Phototransistor.  This allows it to conduct
+* Just as the Latch Pins reach the **locked** position, the Alignment Plate *enters*
+the gap of the Photo Interrupter.  This means the Interrupter is now *blocked*, so
+light from the LED can *not* hit the Phototransistor.  This means that pin 3 and
+pin 4 are disconnected, so pin 3 (the sense wire) is forced **HIGH** (5V) by a
+pull-up resistor on the control board.  Since this is an active-LOW signal, we'd
+say it is now **inactive**.
+* Just as the Latch Pins reach the **unlocked** position, the Alignment Plate *exits*
+the gap of the Interrupter, which is now *unblocked*, so light from the LED can
+cross to the Phototransistor.  This allows it to conduct
 electricity, creating a connection from pin 3 to pin 4.  Pin 4 is connected to 0V
-(LOW), so now pin 3 (the sense pin) also goes **LOW**.
-* Just as the Latch Pins reach the **unlocked** position, the Alignment Plate *enters*
-the gap of the Interrupter, which is now *blocked*, so light from the LED can *not*
-hit it.  This breaks the connection between pins 3 and 4.  Pin 3 is then forced
-**HIGH** (5V) by a pull-up resistor on the control board.
+(LOW), so pin 3 also goes **LOW**, and is now **active**.
 
-Bottom line:  Unlocked = 5 Volts.  Locked = 0 Volts.
+Bottom line:  The sense wire (pin 3) means **UNLOCKED**.
 
 Now finally we can summarize what it would take for the Raspberry Pi to control the
 latch.  When we want to lock or unlock, turn on the LED and start the motor.  Wait
@@ -287,26 +314,37 @@ depending on whether we're locking or unlocking the door).  Quickly turn off the
 motor (and the LED).  Done!  The entire process takes around 0.3 seconds, so it's
 important for the Pi to stop the motor very quickly after the voltage transition.
 
+In terms of voltage compatibility, we need to drive the motor and LED, and we need
+to sense the output of the Phototransistor.  The last one is easy --- we can use
+the Pi's internal 3.3V pull-up resistors, just like with the reed switches.  The
+motor appears to be driven at around 3.2V, which is close enough to the Pi's 3.3V
+I/O level.
+^[Though as we'll discuss in the next post, it may not be advisable to connect the
+motor directly to an I/O pin.]
+
+That just leaves the LED.  To connect to the Pi, we'll have to create our own LED
+driver circuit with an appropriate current-limiting resistor.  This is standard
+practice when driving LEDs from the Raspberry Pi, and we'll figure out the details
+next time.
+
 ## Cutting the cord
 
-Mission accomplished! (More or less --- let's just ignore that mystery sensor).  We
+Mission accomplished!  We
 understand how to lock and unlock the door, and we know how to detect when the
-cat is pushing on the door.  We understand the wiring well enough to create a
-circuit diagram showing the purpose of those 12 wires:
+cat is pushing on the door, and when it's in a wide-open position.
+We understand the wiring well enough to create a
+circuit diagram showing the purpose of all 12 wires:
 
 <object data="/static/img/diagram-original.svg" width="80%" alt="Diagram" class="mx-auto" style="pointer-events: none;"></object>
 
-What's up with the "DuPont Connectors" shown in the diagram?  Well, we're ready to
+We're ready to
 dispense with the CatMate's built-in control board, and connect these signals to
 the Raspberry Pi instead.  But that will mean physically cutting wires, which will
 definitely break the catdoor!  Remember that we'd like to be able to restore the
 door to its current working state, if the project doesn't work out.
 
-What we'll do is splice pluggable connectors
-^[I happened to have 4-pin and 6-pin DuPont connectors on hand, which is why
-the diagram shows an empty spot in each connector.]
-into the middle of the wires, so that we
-can plug into either the control board, or the Pi.
+What we'll do is splice pluggable connectors into the middle of the wires, so that
+we can plug into either the control board, or the Pi.
 
 ![](/static/img/dupont_detail.jpg){.inline width=250}
 ![](/static/img/dupont_kit.jpg){.inline width=400}
@@ -322,7 +360,7 @@ is a good starting point.
 Once the connectors are installed, we can plug the male and female connectors
 together, reconnecting the sensors and motor with the CatMate's control board.
 And voila, now we have... a cat door that does exactly what it did before!  But now
-we can wire the Raspberry Pi to another set
-of DuPont connectors, and swap between the CatMate's built-in controller and the Pi.
+we can wire the Raspberry Pi to another
+connector, and swap from the CatMate's built-in controller to the Pi whenever we want.
 
 Next time, we'll do exactly that!
